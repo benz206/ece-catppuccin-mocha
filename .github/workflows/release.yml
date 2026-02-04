@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read manifest version
+        id: manifest
+        run: |
+          version=$(node -e "const m=require('./manifest.json'); process.stdout.write(m.version)")
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Verify tag matches manifest version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$tag" != "${{ steps.manifest.outputs.version }}" ]; then
+            echo "Tag v${tag} does not match manifest version ${{ steps.manifest.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Create release zip
+        run: |
+          zip -r "ece-catppuccin-mocha-${{ steps.manifest.outputs.version }}.zip" . -x ".git/*" -x ".github/*"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "ece-catppuccin-mocha-${{ steps.manifest.outputs.version }}.zip"
