@@ -8,7 +8,7 @@
     {
       "matches": [
         "https://ece.uwaterloo.ca/~ece150/*",
-        "https://ece.uwaterloo.ca/~dwharder/nm/Lecture_materials/*"
+        "https://ece.uwaterloo.ca/~dwharder/nm/*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"]

@@ -222,28 +222,49 @@ a {
   border: none !important;
 }
 
-.accent-menu {
+.accent-fab {
   position: fixed;
   right: 16px;
   bottom: 16px;
   z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accent-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: 2px solid var(--ctp-surface2);
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  padding: 0;
+}
+
+.accent-panel {
+  display: none;
   background: var(--ctp-mantle);
   border: 1px solid var(--ctp-surface2);
   border-radius: 10px;
   padding: 10px 12px;
   color: var(--ctp-text);
-  display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
   font-size: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 
-.accent-menu label {
+.accent-fab.open .accent-panel {
+  display: flex;
+}
+
+.accent-panel label {
   color: var(--ctp-subtext1);
 }
 
-.accent-menu button {
+.accent-panel button {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -253,11 +274,11 @@ a {
   padding: 0;
 }
 
-.accent-menu button:focus,
-.accent-menu button:hover {
+.accent-panel button:focus,
+.accent-panel button:hover {
   border-color: var(--ctp-text);
 }
 
-.accent-menu button[aria-pressed="true"] {
+.accent-panel button[aria-pressed="true"] {
   border-color: var(--ctp-lavender);
 }

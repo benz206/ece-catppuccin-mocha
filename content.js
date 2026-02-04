@@ -49,12 +49,21 @@ if (savedAccent) {
   document.documentElement.style.setProperty("--accent", savedAccent);
 }
 
-const menu = document.createElement("div");
-menu.className = "accent-menu";
+const fab = document.createElement("div");
+fab.className = "accent-fab";
+
+const toggle = document.createElement("button");
+toggle.className = "accent-toggle";
+toggle.type = "button";
+toggle.setAttribute("aria-label", "Accent menu");
+fab.appendChild(toggle);
+
+const panel = document.createElement("div");
+panel.className = "accent-panel";
 
 const label = document.createElement("label");
 label.textContent = "Accent";
-menu.appendChild(label);
+panel.appendChild(label);
 
 accentOptions.forEach((option) => {
   const btn = document.createElement("button");
@@ -69,12 +78,110 @@ accentOptions.forEach((option) => {
   btn.addEventListener("click", () => {
     document.documentElement.style.setProperty("--accent", option.color);
     localStorage.setItem("accent_color", option.color);
-    menu.querySelectorAll("button").forEach((b) => {
+    panel.querySelectorAll("button").forEach((b) => {
       b.setAttribute("aria-pressed", b === btn ? "true" : "false");
     });
+    fab.classList.remove("open");
   });
 
-  menu.appendChild(btn);
+  panel.appendChild(btn);
 });
 
-document.body.appendChild(menu);
+fab.appendChild(panel);
+document.body.appendChild(fab);
+
+const savedPos = localStorage.getItem("accent_fab_pos");
+if (savedPos) {
+  const pos = JSON.parse(savedPos);
+  fab.style.left = `${pos.x}px`;
+  fab.style.top = `${pos.y}px`;
+  fab.style.right = "auto";
+  fab.style.bottom = "auto";
+}
+
+let dragStartX = 0;
+let dragStartY = 0;
+let startLeft = 0;
+let startTop = 0;
+let dragging = false;
+
+toggle.addEventListener("pointerdown", (event) => {
+  toggle.setPointerCapture(event.pointerId);
+  dragStartX = event.clientX;
+  dragStartY = event.clientY;
+  const rect = fab.getBoundingClientRect();
+  startLeft = rect.left;
+  startTop = rect.top;
+  dragging = false;
+});
+
+toggle.addEventListener("pointermove", (event) => {
+  if (!toggle.hasPointerCapture(event.pointerId)) {
+    return;
+  }
+
+  const dx = event.clientX - dragStartX;
+  const dy = event.clientY - dragStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+    dragging = true;
+  }
+
+  if (!dragging) {
+    return;
+  }
+
+  const maxX = window.innerWidth - fab.offsetWidth - 12;
+  const maxY = window.innerHeight - fab.offsetHeight - 12;
+  const nextX = Math.min(Math.max(12, startLeft + dx), maxX);
+  const nextY = Math.min(Math.max(12, startTop + dy), maxY);
+
+  fab.style.left = `${nextX}px`;
+  fab.style.top = `${nextY}px`;
+  fab.style.right = "auto";
+  fab.style.bottom = "auto";
+});
+
+toggle.addEventListener("pointerup", (event) => {
+  if (!toggle.hasPointerCapture(event.pointerId)) {
+    return;
+  }
+
+  toggle.releasePointerCapture(event.pointerId);
+
+  if (!dragging) {
+    fab.classList.toggle("open");
+    return;
+  }
+
+  const rect = fab.getBoundingClientRect();
+  const distances = [
+    { edge: "left", value: rect.left },
+    { edge: "right", value: window.innerWidth - rect.right },
+    { edge: "top", value: rect.top },
+    { edge: "bottom", value: window.innerHeight - rect.bottom }
+  ];
+  distances.sort((a, b) => a.value - b.value);
+
+  const snap = distances[0].edge;
+  const padding = 12;
+  let x = rect.left;
+  let y = rect.top;
+
+  if (snap === "left") {
+    x = padding;
+  } else if (snap === "right") {
+    x = window.innerWidth - rect.width - padding;
+  } else if (snap === "top") {
+    y = padding;
+  } else {
+    y = window.innerHeight - rect.height - padding;
+  }
+
+  fab.style.left = `${x}px`;
+  fab.style.top = `${y}px`;
+  fab.style.right = "auto";
+  fab.style.bottom = "auto";
+
+  localStorage.setItem("accent_fab_pos", JSON.stringify({ x, y }));
+  fab.classList.remove("open");
+});
